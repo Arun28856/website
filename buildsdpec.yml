@@ -1,0 +1,19 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DOCKERHUB_USER: /devops/dockerhub/username
+    DOCKERHUB_PASS: /devops/dockerhub/password
+
+phases:
+  pre_build:
+    commands:
+      - echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+      - TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
+  build:
+    commands:
+      - docker build -t $DOCKERHUB_USER/website:$TAG -t $DOCKERHUB_USER/website:latest .
+  post_build:
+    commands:
+      - docker push $DOCKERHUB_USER/website:$TAG
+      - docker push $DOCKERHUB_USER/website:latest
